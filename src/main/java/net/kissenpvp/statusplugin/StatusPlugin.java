@@ -23,15 +23,12 @@ import net.kissenpvp.statusplugin.command.ClearStatusCommand;
 import net.kissenpvp.statusplugin.event.ClearStatusEvent;
 import net.kissenpvp.statusplugin.event.SetStatusEvent;
 import net.kissenpvp.statusplugin.command.StatusCommand;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -71,7 +68,7 @@ public final class StatusPlugin extends JavaPlugin {
 
             @EventHandler(priority = EventPriority.LOWEST)
             public void onPlayerJoinEvent(@NotNull PlayerJoinEvent playerJoinEvent) {
-                refreshTab();
+                refreshTab(playerJoinEvent.getPlayer());
             }
 
         }, this);
@@ -86,22 +83,24 @@ public final class StatusPlugin extends JavaPlugin {
      * and status. This event is then passed to the server's plugin manager which
      * in turn distributes the event to all registered event listeners. If any
      * of these listeners cancels the event, this method will throw an
-     * {@link EventCancelledException} and the players status will remain unchanged.
+     * {@link EventCancelledException} and the player's status will remain unchanged.
      *
-     * <p>Subsequently, the status is stripped and a trailing space is added.
-     * Hereafter, the previous status of the player is removed from the
-     * {@code statusMap} and the updated status is inserted. This map relates
-     * each player (based on their unique id) to their corresponding status.
+     * <p>Subsequently, the status is sanitized and a trailing space is added:
+     * any ampersand characters ('&') are replaced with section sign characters ('§'),
+     * and white space is removed from both ends. Hereafter, the previous status
+     * of the player is cleared from the {@code statusMap} and the updated status
+     * is inserted. This map relates each player (based on their unique ID) to
+     * their corresponding status.
      *
-     * <p>Lastly, the {@link #refreshTab()} method is called to ensure the updated
-     * status is properly displayed on the game's player tab.
+     * <p>Lastly, the {@link #refreshTab(Player)} method is called to ensure the
+     * updated status is properly displayed on the game's player tab.
      *
      * @param player the player whose status is to be updated.
      *               Must be non-{@code null}.
-     * @param status a string representing the new status of the player.
+     * @param status a String representing the new status of the player.
      *               Must be non-{@code null}.
-     * @return {@code status.strip() + " "} a sanitized version of the input
-     * status with white space removed from both ends and with a trailing space
+     * @return a sanitized version of the input status, with ampersands replaced with
+     * section signs, white space removed from both ends, and with a trailing space
      * added.
      * @throws EventCancelledException if any event listener in the game cancels
      *                                 the {@link SetStatusEvent} that is fired when changing the player's status.
@@ -109,17 +108,17 @@ public final class StatusPlugin extends JavaPlugin {
      * @see EventCancelledException
      */
     public @NotNull String setStatus(@NotNull Player player, @NotNull String status) throws EventCancelledException {
+        status = status.replace('&', '§').strip() + " ";
         SetStatusEvent setStatusEvent = new SetStatusEvent(player, status);
         getServer().getPluginManager().callEvent(setStatusEvent);
-        if (setStatusEvent.isCancelled()) {
+        if (setStatusEvent.isCancelled() || setStatusEvent.getStatus().isBlank()) {
             throw new EventCancelledException();
         }
-        status = status.replace('&', '§').strip() + " ";
 
         statusMap.remove(player.getUniqueId()); // clear previous data
         statusMap.put(player.getUniqueId(), status);
 
-        refreshTab();
+        refreshTab(player);
         return status;
     }
 
@@ -127,23 +126,22 @@ public final class StatusPlugin extends JavaPlugin {
      * Retrieves the status of a provided player from the {@code statusMap}.
      *
      * <p>This method fetches the status of the player referenced by their unique
-     * id from the {@code statusMap}. This map relates each player (based on their
-     * unique id) to their corresponding status.
+     * ID from the {@code statusMap}. This map relates each player (based on their
+     * unique ID) to their corresponding status.
      *
      * <p>If a status value for the player does not exist in the {@code statusMap},
      * {@link Optional#empty()} is returned.
-     * <p>
-     * The {@link Optional} wrapper is used to safely handle null values and
-     * express absence of a value, mitigating potential {@link NullPointerException}s.
+     *
+     * <p>The {@link Optional} wrapper is used to safely handle null values and
+     * express the absence of a value, mitigating potential {@link NullPointerException}s.
      *
      * @param player the player whose status is to be retrieved.
      *               Must be non-{@code null}.
      * @return An {@link Optional} that may contain the {@code String} status of the
      * player if it exists in {@code statusMap}. If not, it will contain no value
      * ({@link Optional#empty()}).
-     * @throws EventCancelledException - This exception is unlikely to be thrown
-     *                                 from this method based on the provided method body. It is assumed this is
-     *                                 part of the method signature due to a requirement of an interface
+     * @throws EventCancelledException - This exception is no longer thrown
+     *                                 from this method. This change in method signature might affect an interface
      *                                 it may be overwriting or some other part of your architecture.
      */
     public @NotNull Optional<String> getStatus(@NotNull Player player) throws EventCancelledException {
@@ -165,8 +163,9 @@ public final class StatusPlugin extends JavaPlugin {
      * {@link EventCancelledException} and the player's status will remain active.
      *
      * <p>If the event is not cancelled, the status of the player is removed from
-     * the {@code statusMap}. Lastly, the {@link #refreshTab()} method is called
-     * to ensure the updated (empty) status is properly displayed on the game's player tab.
+     * the {@code statusMap}. Lastly, the {@link #refreshTab(Player)} method is
+     * called to ensure the updated (empty) status is properly displayed on the
+     * game's player tab.
      *
      * @param player the player whose status is to be cleared.
      *               Must be non-{@code null}.
@@ -184,37 +183,22 @@ public final class StatusPlugin extends JavaPlugin {
                 throw new EventCancelledException();
             }
             statusMap.remove(player.getUniqueId());
-            refreshTab();
+            refreshTab(player);
         }
     }
 
     /**
-     * Refreshes the player tab for all online players.
+     * Refreshes the player tab for a specified player.
      *
-     * <p>The method iterates through each online player and makes a call to
-     * {@link #refreshTab(Player)} to individually refresh their player tabs.
+     * <p>This method retrieves the status of the player and concatenates it with
+     * the player's name. If the player does not have a status, only the player's
+     * name is used. This result is then set as the player list name of the
+     * specified player, thereby refreshing the display of the player's name
+     * in the game tab.
+     *
+     * @param player the player whose player tab is to be refreshed. Must be non-{@code null}.
      */
-    private void refreshTab() {
-        Bukkit.getOnlinePlayers().forEach(this::refreshTab);
-    }
-
-    /**
-     * Refreshes the player tab for a specified source player.
-     *
-     * <p>This method initiates a new scoreboard and for each online player, it
-     * registers a new team with the player's name and sets its prefix to the
-     * player's status (if any). The player is then added to their team. Finally,
-     * the scoreboard of the source player is set to the newly created scoreboard.
-     *
-     * @param source the player whose player tab is to be refreshed. Must be non-{@code null}.
-     */
-    private void refreshTab(@NotNull Player source) {
-        Scoreboard scoreboard = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            Team team = scoreboard.registerNewTeam(player.getName());
-            getStatus(player).ifPresent(team::setPrefix);
-            team.addEntry(player.getName());
-        });
-        source.setScoreboard(scoreboard);
+    private void refreshTab(@NotNull Player player) {
+        player.setPlayerListName(getStatus(player).map(status -> status + player.getName()).orElse(player.getName()));
     }
 }
