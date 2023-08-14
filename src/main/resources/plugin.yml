@@ -1,0 +1,4 @@
+name: StatusPlugin
+version: '${version}'
+main: net.groldi.statusplugin.StatusPlugin
+api-version: '1.20'
