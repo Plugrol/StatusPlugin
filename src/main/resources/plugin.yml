@@ -1,4 +1,15 @@
 name: StatusPlugin
 version: '${version}'
-main: net.groldi.statusplugin.StatusPlugin
-api-version: '1.20'
+description: Custom statuses for players
+author: KissenPvP
+prefix: StatusPlugin
+main: net.kissenpvp.statusplugin.StatusPlugin
+commands:
+  status:
+    description: A command for setting a custom status which will be shown in the tab list.
+    usage: /status <status...>
+  clearstatus:
+    description: Clears previously set status messages.
+    aliases: cstatus
+    usage: /cstatus
+

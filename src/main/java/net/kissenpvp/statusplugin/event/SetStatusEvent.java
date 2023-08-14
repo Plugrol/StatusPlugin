@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
  */
 
-package net.kissenpvp.statusplugin;
+package net.kissenpvp.statusplugin.event;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -74,6 +74,7 @@ public class SetStatusEvent extends Event implements Cancellable {
         this.cancelled = false;
     }
 
+    @SuppressWarnings("unused") // Bukkit...
     @NotNull
     public static HandlerList getHandlerList() {
         return handlers;

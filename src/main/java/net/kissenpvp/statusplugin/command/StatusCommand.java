@@ -16,8 +16,10 @@
  * along with this program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
  */
 
-package net.kissenpvp.statusplugin;
+package net.kissenpvp.statusplugin.command;
 
+import net.kissenpvp.statusplugin.EventCancelledException;
+import net.kissenpvp.statusplugin.StatusPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

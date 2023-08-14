@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-group = 'net.groldi'
-version = '1.0-SNAPSHOT'
+group = 'net.kissenpvp'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
@@ -18,7 +18,12 @@ repositories {
 }
 
 dependencies {
-compileOnly "org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT"
+
+    implementation 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+    implementation 'org.jetbrains:annotations:24.0.0'
+    compileOnly "org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT"
 }
 
 def targetJavaVersion = 17
