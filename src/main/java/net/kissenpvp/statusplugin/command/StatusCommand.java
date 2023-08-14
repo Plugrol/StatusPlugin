@@ -53,8 +53,7 @@ public class StatusCommand implements CommandExecutor {
         }
 
         try {
-            player.sendMessage(String.format("§7Your status has been set to §f%s.", StatusPlugin.getInstance()
-                    .setStatus(player, String.join(" ", args))));
+            player.sendMessage(String.format("§7Your status has been set to §f%s.", StatusPlugin.getInstance().setStatus(player, String.join(" ", args))));
         } catch (EventCancelledException eventCancelledException) {
             player.sendMessage("§cThe status was not changed.");
         }

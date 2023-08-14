@@ -55,7 +55,7 @@ public class ClearStatusCommand implements CommandExecutor {
             try
             {
                 StatusPlugin.getInstance().clearStatus(player);
-                player.sendMessage(String.format("§7Your status §f%s §7has been removed.", status));
+                player.sendMessage(String.format("§7Your status §f%s §7has been removed.", status.strip()));
             }catch (EventCancelledException eventCancelledException)
             {
                 player.sendMessage("§cNothing has been changed.");
