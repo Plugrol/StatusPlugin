@@ -48,15 +48,15 @@ public class StatusCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can execute this command.");
+            sender.sendMessage("§cOnly players can execute this command.");
             return true;
         }
 
         try {
-            player.sendMessage(String.format("Your status has been set to %s.", StatusPlugin.getInstance()
+            player.sendMessage(String.format("§7Your status has been set to §f%s.", StatusPlugin.getInstance()
                     .setStatus(player, String.join(" ", args))));
         } catch (EventCancelledException eventCancelledException) {
-            player.sendMessage("The status was not changed.");
+            player.sendMessage("§cThe status was not changed.");
         }
         return true;
     }

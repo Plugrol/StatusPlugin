@@ -46,7 +46,7 @@ public class ClearStatusCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can execute this command.");
+            sender.sendMessage("§cOnly players can execute this command.");
             return true;
         }
 
@@ -55,12 +55,12 @@ public class ClearStatusCommand implements CommandExecutor {
             try
             {
                 StatusPlugin.getInstance().clearStatus(player);
-                player.sendMessage(String.format("Your status %s has been removed.", status));
+                player.sendMessage(String.format("§7Your status §f%s §7has been removed.", status));
             }catch (EventCancelledException eventCancelledException)
             {
-                player.sendMessage("Nothing has been changed.");
+                player.sendMessage("§cNothing has been changed.");
             }
-        }, () -> player.sendMessage("You have no status selected at the moment."));
+        }, () -> player.sendMessage("§7You have no status selected at the moment."));
         return true;
     }
 }
